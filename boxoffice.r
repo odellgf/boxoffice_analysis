@@ -56,8 +56,8 @@ ggplot(avg.boxoffice.byyear, aes(year, boxoffice, group = 1)) +
   geom_point() +
   geom_line() +
   coord_cartesian(ylim = c(0, 100)) +
-  ylab("Average boxoffice") +
-  ggtitle("Average boxoffice performance (millions, USD) by year")
+  ylab("Average box office") +
+  ggtitle("Average box office performance (millions, USD) by year")
 
 
 ## ----summary_plots_top15, cache=TRUE-------------------------------------------------------------------------------------------------------------------------------------
@@ -78,9 +78,9 @@ g.d2 <- ggplot(table.majmid) +
   geom_col(aes(reorder(distributor, box.office.avg), box.office.avg, fill = distributor)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   scale_fill_got_d(option = "Daenerys") +
-  ylab("Average boxoffice") +
+  ylab("Average box office") +
   xlab("Studio") +
-  ggtitle("Average boxoffice performance (millions, USD) per film for top 15 studios,\n2014-2018")
+  ggtitle("Average box office performance (millions, USD) per film for top 15 studios,\n2014-2018")
 
 g.d3 <- ggplot(table.majmid) +
   geom_col(aes(reorder(distributor, rt.critics.avg), rt.critics.avg, fill = distributor)) +
@@ -118,8 +118,8 @@ ggplot() +
   geom_smooth(data = filter(boxoffice, rt.critics >= 60), mapping = aes(rt.critics, dom.box.mil), method = "lm") +
   geom_vline(xintercept = 60, color = "red") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Discontinuity plot of Rotten Tomatoes score and domestic boxoffice\n(millions, USD)") +
+  ylab("Box office") +
+  ggtitle("Discontinuity plot of Rotten Tomatoes score and domestic box office\n(millions, USD)") +
   coord_cartesian(expand=F)
 
 
@@ -135,12 +135,12 @@ cor.table <- table.majmid %>% dplyr::select(-distributor) %>% correlate() %>% re
          rt.critics.avg = round(rt.critics.avg, 2),
          theaters.avg = round(theaters.avg, 2)) %>%
   rename(` ` = rowname,
-         `Average boxoffice performance` = box.office.avg,
+         `Average box office performance` = box.office.avg,
          `Total movies` = total.movies,
          `Average Rotten Tomatoes score (critics)` = rt.critics.avg,
          `Average number of theaters` = theaters.avg)
 
-cor.table$` ` <- c("Average number of theaters", "Total movies", "Average boxoffice performance", "Average Rotten Tomatoes score (critics)")
+cor.table$` ` <- c("Average number of theaters", "Total movies", "Average box office performance", "Average Rotten Tomatoes score (critics)")
 
 cor.table[is.na(cor.table)] <- ""
 
@@ -154,7 +154,7 @@ sign_formatter <-
 format_table(cor.table, align = c("l", "c", "c", "c", "r"),
              list(
                ` ` = formatter("span", style = ~ style(font.weight = "bold", color = c("#454545"))),
-               `Average boxoffice performance` = sign_formatter,
+               `Average box office performance` = sign_formatter,
                `Total movies` = sign_formatter,
                `Average Rotten Tomatoes score (critics)` = sign_formatter,
                `Average number of theaters` = sign_formatter
@@ -168,12 +168,12 @@ format_table(cor.table, align = c("l", "c", "c", "c", "r"),
 ## ----average_boxoffice_studio_status, cache=TRUE-------------------------------------------------------------------------------------------------------------------------
 tab2 <- boxoffice %>% group_by(.$studio.status.threecat) %>%
   summarize(dom.box.mil = round(mean(dom.box.mil), 2)) %>%
-  rename(`Studio status` = ".$studio.status.threecat", `Average domestic boxoffice (millions)` = dom.box.mil)
+  rename(`Studio status` = ".$studio.status.threecat", `Average domestic box office (millions)` = dom.box.mil)
 
 format_table(tab2,
              align = c("l", "r"),
              list(
-               `Average domestic boxoffice (millions)` = color_tile(customGreen0, customGreen),
+               `Average domestic box office (millions)` = color_tile(customGreen0, customGreen),
                `Studio status` = formatter("span", style = ~ style(color = "grey",font.weight = "bold", width = "50%"))
              )) %>%
   kable_styling(full_width = F) %>% column_spec(2, width = "10em")
@@ -207,8 +207,8 @@ ggplot(dat.mid, aes(studio.status.threecat, dom.box.mil)) +
   geom_boxplot() +
   geom_text_repel(mapping = aes(label = outlier), hjust = -0.1) +
   xlab("Studio status") +
-  ylab("Boxoffice") +
-  ggtitle("Boxplot of domestic boxoffice performance (millions, USD) for mid-sized studios")
+  ylab("Box office") +
+  ggtitle("Boxplot of domestic box office performance (millions, USD) for mid-sized studios")
 
 
 ## ----boxplot_minors, cache=TRUE------------------------------------------------------------------------------------------------------------------------------------------
@@ -218,28 +218,28 @@ ggplot(dat.min, aes(studio.status.threecat, dom.box.mil)) +
   geom_boxplot() +
   geom_text_repel(mapping = aes(label = outlier), hjust = -0.1) +
   xlab("Studio status") +
-  ylab("Boxoffice") +
-  ggtitle("Boxplot of domestic boxoffice performance (millions, USD) for minor studios")
+  ylab("Box office") +
+  ggtitle("Boxplot of domestic box office performance (millions, USD) for minor studios")
 
 
 ## ----density_plots, cache=TRUE-------------------------------------------------------------------------------------------------------------------------------------------
 boxoffice %>% filter(studio.status.threecat == "major") %>% ggplot(aes(dom.box.mil)) +
   geom_density(fill = "gray", color = "black", alpha = 0.7) +
   geom_vline(xintercept = mean(boxoffice$dom.box.mil[boxoffice$studio.status.threecat == "major"]), color = "red") +
-  xlab("Boxoffice") +
-  ggtitle("Density plot of domestic boxoffice performance (millions, USD) for major studios")
+  xlab("Box office") +
+  ggtitle("Density plot of domestic box office performance (millions, USD) for major studios")
 
 boxoffice %>% filter(studio.status.threecat == "mid") %>% ggplot(aes(dom.box.mil)) +
   geom_density(fill = "gray", color = "black", alpha = 0.7) + 
   geom_vline(xintercept = mean(boxoffice$dom.box.mil[boxoffice$studio.status.threecat == "mid"]), color = "red") +
-  xlab("Boxoffice") +
-  ggtitle("Density plot of domestic boxoffice performance (millions, USD)\nfor mid-sized studios")
+  xlab("Box office") +
+  ggtitle("Density plot of domestic box office performance (millions, USD)\nfor mid-sized studios")
 
 boxoffice %>% filter(studio.status.threecat == "minor") %>% ggplot(aes(dom.box.mil)) +
   geom_density(fill = "gray", color = "black", alpha = 0.7) + 
   geom_vline(xintercept = mean(boxoffice$dom.box.mil[boxoffice$studio.status.threecat == "minor"]), color = "red") +
-  xlab("Boxoffice") +
-  ggtitle("Density plot of domestic boxoffice performance (millions, USD) for minor studios")
+  xlab("Box office") +
+  ggtitle("Density plot of domestic box office performance (millions, USD) for minor studios")
 
 
 ## ----correlations_all_numeric, cache=TRUE--------------------------------------------------------------------------------------------------------------------------------
@@ -377,8 +377,8 @@ g.m2 <- ggplot(data = tab.month) +
   geom_col(aes(month, avg.boxoffice, fill = month)) +
   scale_fill_got_d(option = "margaery") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
-  ylab("Average Boxoffice") +
-  ggtitle("Average boxoffice performance by month")
+  ylab("Average box office") +
+  ggtitle("Average box office performance by month")
 
 g.m3 <- ggplot(data = tab.month) +
   geom_col(aes(month, avg.rt.critics, fill = month)) +
@@ -459,9 +459,9 @@ g.g2 <- ggplot(genre.tab) +
   geom_col(aes(reorder(genre, boxoffice.avg), boxoffice.avg, fill = genre)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   scale_fill_got_d(option = "Lannister") +
-  ylab("Boxoffice") +
+  ylab("Box office") +
   xlab("Genre") +
-  ggtitle("Average boxoffice performance\n(millions, USD) by genre")
+  ggtitle("Average box office performance\n(millions, USD) by genre")
 
 g.g3 <- ggplot(genre.tab) +
   geom_col(aes(reorder(genre, rt.critics), rt.critics, fill = genre)) +
@@ -504,15 +504,15 @@ ggplot(data = boxoffice) +
   geom_point(aes(rt.critics, dom.box.mil.log), alpha = 0.5, color = "blue") +
   geom_abline(slope = m2a.dat$estimate[2], intercept = m2a.dat$estimate[1], color = "red") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (critics)")
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (critics)")
 
 ggplot(data = boxoffice) +
   geom_point(aes(rt.audience, dom.box.mil.log), alpha = 0.5, color = "green") +
   geom_abline(slope = m2b.dat$estimate[2], intercept = m2b.dat$estimate[1], color = "red") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (audience)")
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (audience)")
 
 
 ## ----plots_reg_RT_models, cache = T--------------------------------------------------------------------------------------------------------------------------------------
@@ -523,16 +523,16 @@ ggplot(m2a.grid, aes(rt.critics, pred)) +
   geom_line(color = "red") +
   geom_point(boxoffice, mapping = aes(rt.critics, dom.box.mil), alpha = 0.5, color = "blue") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD) \n predicted by Rotten Tomatoes score (critics)") +
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD) \n predicted by Rotten Tomatoes score (critics)") +
   coord_cartesian(expand=F)
 
 ggplot(m2b.grid, aes(rt.audience, pred)) +
   geom_line(color = "red") +
   geom_point(boxoffice, mapping = aes(rt.audience, dom.box.mil), alpha = 0.5, color = "green") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD) \n predicted by Rotten Tomatoes score (audience)") +
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD) \n predicted by Rotten Tomatoes score (audience)") +
   coord_cartesian(expand=F)
 
 
@@ -601,8 +601,8 @@ ggplot(dat,
     ),
     stat = "identity") +
   xlab("Theaters") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand number of theaters at open, by studio status") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand number of theaters at open, by studio status") +
   scale_color_discrete(guide = F) +
   labs(fill = "Studio status") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
@@ -634,8 +634,8 @@ g.r1 <- ggplot(dat2,
     ),
     stat = "identity") +
   xlab("Score") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand Rotten Tomatoes score\n(critics), by studio status") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand Rotten Tomatoes score\n(critics), by studio status") +
   scale_color_discrete(guide = F) +
   labs(fill = "Studio status") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
@@ -670,8 +670,8 @@ g.r2 <- ggplot(dat4,
     ),
     stat = "identity") +
   xlab("Score") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand Rotten Tomatoes score\n(audience), by studio status") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand Rotten Tomatoes score\n(audience), by studio status") +
   scale_color_discrete(guide = F) +
   labs(fill = "Studio status") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
@@ -707,8 +707,8 @@ ggplot(dat3,
     ),
     stat = "identity") +
   xlab("Theaters") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand number of theaters at open, by month") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand number of theaters at open, by month") +
   scale_color_discrete(guide = F) +
   labs(fill = "Month") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
