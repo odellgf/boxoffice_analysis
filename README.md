@@ -2,7 +2,7 @@
 title: "Boxoffice Analysis"
 author: "Graham Odell"
 date: "6/23/2020"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
