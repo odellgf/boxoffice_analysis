@@ -1,5 +1,5 @@
 ---
-title: "Boxoffice Analysis"
+title: "Box Office Analysis"
 author: "Graham Odell"
 date: "6/23/2020"
 output: html_document
@@ -35,11 +35,11 @@ customBlue <- "#00B2EE"
 
 # Project Overview
 
-This project utilizes a custom dataset to explore patterns in boxoffice performance of films released between 2014 and 2019. The dataset includes variables measuring, among other factors, boxoffice performance (dollars earned in the North American market), prevalence of releases (number of theaters at opening), audience and critic reactions (Rotten Tomatoes scores), studio (name and size), genre and time of release (month and year). In this project, I focus on patterns relating to studio, month of release and Rotten Tomatoes score. This focus is driven by recent film industry commentary on the remarkable success of certain studios (e.g., Disney), the changing calendar of film releases (e.g., big-budget blockbusters released in February and March) and the outsized influence of review aggregators such as Rotten Tomatoes.
+This project utilizes a custom dataset to explore patterns in box office performance of films released between 2014 and 2019. The dataset includes variables measuring, among other factors, box office performance (dollars earned in the North American market), prevalence of releases (number of theaters at opening), audience and critic reactions (Rotten Tomatoes scores), studio (name and size), genre and time of release (month and year). In this project, I focus on patterns relating to studio, month of release and Rotten Tomatoes score. This focus is driven by recent film industry commentary on the remarkable success of certain studios (e.g., Disney), the changing calendar of film releases (e.g., big-budget blockbusters released in February and March) and the outsized influence of review aggregators such as Rotten Tomatoes.
 
-I try to illuminate patterns in the data and connections between the variables through standard statistical techniques, such as correlation matrices. linear regression models and machine learning algorithms, and extensive data visualization. More specifically, I use an OLS approach to estimate the effects of various predictors on the outcome variable of logged total boxoffice receipts in the domestic (i.e., North American) market and then compare these models with one generated through the XGBoost algorithm.
+I try to illuminate patterns in the data and connections between the variables through standard statistical techniques, such as correlation matrices. linear regression models and machine learning algorithms, and extensive data visualization. More specifically, I use an OLS approach to estimate the effects of various predictors on the outcome variable of logged total box office receipts in the domestic (i.e., North American) market and then compare these models with one generated through the XGBoost algorithm.
 
-In brief, my major findings are that the number of theaters at opening is the strongest predictor of total boxoffice performance. Rotten Tomatoes scores are also substantial predictors, but perhaps not as much as recent film industry commentary suggests. The time of year of a release matters to some extent, especially in months such as December. When including other predictors, genre does not appear to have a major impact on the boxoffice success of a film, whereas the size of the studio (measured in number of movies released) does. A number of these findings are not surprising, but it is nonetheless useful to have quantitative evidence that confirms one's subjective impressions.
+In brief, my major findings are that the number of theaters at opening is the strongest predictor of total box office performance. Rotten Tomatoes scores are also substantial predictors, but perhaps not as much as recent film industry commentary suggests. The time of year of a release matters to some extent, especially in months such as December. When including other predictors, genre does not appear to have a major impact on the box office success of a film, whereas the size of the studio (measured in number of movies released) does. A number of these findings are not surprising, but it is nonetheless useful to have quantitative evidence that confirms one's subjective impressions.
 
 
 
@@ -68,7 +68,7 @@ boxoffice$studio.status.threecat <- factor(boxoffice$studio.status.threecat, lev
 
 # Dataset Exploration
 
-As can be seen in the plot below, there was a general increase in average boxoffice performance per film between 2014 and 2018. This trend makes sense given the long-term increase in ticket prices, though this probably does not explain all of the increase observed. 2016 appears to have been a down year, though only slightly.
+As can be seen in the plot below, there was a general increase in average box office performance per film between 2014 and 2018. This trend makes sense given the long-term increase in ticket prices, though this probably does not explain all of the increase observed. 2016 appears to have been a down year, though only slightly.
 
 ```{r boxoffice_year, cache=TRUE}
 
@@ -78,8 +78,8 @@ ggplot(avg.boxoffice.byyear, aes(year, boxoffice, group = 1)) +
   geom_point() +
   geom_line() +
   coord_cartesian(ylim = c(0, 100)) +
-  ylab("Average boxoffice") +
-  ggtitle("Average boxoffice performance (millions, USD) by year")
+  ylab("Average box office") +
+  ggtitle("Average box office performance (millions, USD) by year")
 ```
 
 
@@ -88,7 +88,7 @@ ggplot(avg.boxoffice.byyear, aes(year, boxoffice, group = 1)) +
 The following set of plots summarizes some key measures of film studios' performance and industry influence. Note that for the sake of visual clarity, I have excluded studios that released ten movies or less in the five year period covered by the dataset. There are a total of 41 studios represented in the dataset, of which 15 are displayed in the following plots.
 
 
-```{r summary_plots_top15, cache=TRUE}
+```{r summary_plots_top15, cache=T}
 table.majmid <- boxoffice %>% group_by(distributor) %>%
   filter(n() > 10) %>% summarize(box.office.avg = mean(dom.box.mil), total.movies = n(), 
                                  rt.critics.avg = mean(rt.critics), theaters.avg = mean(dom.theaters.open, na.rm = T)) %>%
@@ -106,9 +106,9 @@ g.d2 <- ggplot(table.majmid) +
   geom_col(aes(reorder(distributor, box.office.avg), box.office.avg, fill = distributor)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   scale_fill_got_d(option = "Daenerys") +
-  ylab("Average boxoffice") +
+  ylab("Average box office") +
   xlab("Studio") +
-  ggtitle("Average boxoffice performance (millions, USD) per film for top 15 studios,\n2014-2018")
+  ggtitle("Average box office performance (millions, USD) per film for top 15 studios,\n2014-2018")
 
 g.d3 <- ggplot(table.majmid) +
   geom_col(aes(reorder(distributor, rt.critics.avg), rt.critics.avg, fill = distributor)) +
@@ -127,29 +127,29 @@ g.d4 <- ggplot(table.majmid) +
   ggtitle("Average number of theaters on release per film for top 15 studios, 2014-2018")
 ```
 
-The plot below displays the total number of movies released by each studio (more than ten total movies released). The "Big Seven" - Warner Bros., Universal, Fox, Lionsgate, Disney, Paramount and Sony - not surprisngly dominated the film schedule between 2014 and 2018. Indeed, we see a significant jump in the number of movies released between Focus Features and Sony Pictures. I use this cutoff to distinguish between midrange studios (between 10 and 45 movies released) and majors (more than 45 studios released). This cutoff is less arbitrary than the one used to distinguish between midrange studios and minor ones (ten movies or less), and, as we will see in the quantitative analyses below, the distinction between major and mid is more significant than the one between mid and minor when predicting boxoffice performance.
+The plot below displays the total number of movies released by each studio (more than ten total movies released). The "Big Seven" - Warner Bros., Universal, Fox, Lionsgate, Disney, Paramount and Sony - not surprisngly dominated the film schedule between 2014 and 2018. Indeed, we see a significant jump in the number of movies released between Focus Features and Sony Pictures. I use this cutoff to distinguish between midrange studios (between 10 and 45 movies released) and majors (more than 45 studios released). This cutoff is less arbitrary than the one used to distinguish between midrange studios and minor ones (ten movies or less), and, as we will see in the quantitative analyses below, the distinction between major and mid is more significant than the one between mid and minor when predicting box office performance.
 
-```{r total_movies_top15, cache=TRUE}
+```{r total_movies_top15, cache=F}
 g.d1
 ```
 
-The second plot displays how well the typical movie released by each studio did at the North American boxoffice. Studios are ordered from lowest average performance to highest. Disney is the clear industry leader, with its releases on average earning about 225 million dollars. Universal is a distant second with about 110 million dollars earned per movie. Notice that excluding Disney, there are no truly significant drops in average performance from studio to studio. The most significant of these other drops is between Paramount and Lionsgate, of about 25 million dollars.
+The second plot displays how well the typical movie released by each studio did at the North American box office. Studios are ordered from lowest average performance to highest. Disney is the clear industry leader, with its releases on average earning about 225 million dollars. Universal is a distant second with about 110 million dollars earned per movie. Notice that excluding Disney, there are no truly significant drops in average performance from studio to studio. The most significant of these other drops is between Paramount and Lionsgate, of about 25 million dollars.
 
-In retrospect, it might make sense to include an additional variable that distinguishes Disney from non-Disney films. However, this approach would encourage overfitting since we would be using an estimate of boxoffice performance to predict boxoffice performance. Instead, by focusing on the number of movies released by a given studio, I am relying on a predictor that, at least in principle, is conceptually independent from the outcome I am trying to predict. The argument could be made, though, that past boxoffice performance determines how much cash a studio has on hand to make more films in the future. This is certainly true, but given that the purpose of the project is to predict individual film performance, characteristics of a film's studio should be considered in any analysis. Rather than measure these characteristics directly (which would require some form of multilevel modeling), I instead collapse any potentially significant studio-level factors into the studio variable and any other variables derived from it. Future additions to this project can take a more sophisticated multilevel approach to further tease out the studio characteristics that explain why some studios release better performing movies than others.
+In retrospect, it might make sense to include an additional variable that distinguishes Disney from non-Disney films. However, this approach would encourage overfitting since we would be using an estimate of box office performance to predict box office performance. Instead, by focusing on the number of movies released by a given studio, I am relying on a predictor that, at least in principle, is conceptually independent from the outcome I am trying to predict. The argument could be made, though, that past box office performance determines how much cash a studio has on hand to make more films in the future. This is certainly true, but given that the purpose of the project is to predict individual film performance, characteristics of a film's studio should be considered in any analysis. Rather than measure these characteristics directly (which would require some form of multilevel modeling), I instead collapse any potentially significant studio-level factors into the studio variable and any other variables derived from it. Future additions to this project can take a more sophisticated multilevel approach to further tease out the studio characteristics that explain why some studios release better performing movies than others.
 
-```{r average_boxoffice_top15, cache=TRUE}
+```{r average_boxoffice_top15, cache=F}
 g.d2
 ```
 
 Moving on, we can visually inspect the relationship between studio and Rotten Tomatoes score. We again see a different ranking of studios, with Fox Searchlight boasting the best average score and Relativity Media at the bottom. The "Big Seven" are roughly evenly distributed across the rankings, with Sony having the sixth lowest average score and Disney having the second highest. Films from boutique studios such as Fox Searchlight, The Weinstein Company and Focus Features, not surprisingly, do very well with the critics. The high average score of Disney is notable, since the typical major studio on average puts out rather middling films, judged by critic reception (see Sony, Universal, Warner Bros. and Paramount - all around the 50% mark). Indeed, Disney is the only major studio that releases films with average critic scores of greater than 70%. Given the relatively high number of movies Disney puts out (more than ten a year), this consistency is adjudged quality is rather impressive.
 
-```{r average_RT_score_top15, cache=TRUE}
+```{r average_RT_score_top15, cache=F}
 g.d3
 ```
 
 It's worth noting here how Rotten Tomatoes scores work. They represent the percentage of aggregated reviews that are "positive", a classification based in part on Rotten Tomatoes' editors' judgments about the scales that reviewers use. If a movie's aggregate percentage of positive reviews is 60% or greater, then the movie is classified as "Fresh" and receives an appealing red tomato icon next to its name on the Rotten Tomatoes site. If the percentage is less than 60%, then the film is classified as "Rotten" and is branded with a rude green splat icon.
 
-One may wonder if the "Fresh" rating has an effect on the boxoffice performance of a movie, independent of the percentage score. The following plot (which computes the relationship between the two variables separately for RT scores above and below the 60% threshold) suggests there is no special advantage a film receives for having a "Fresh" rating. A film with a 59% rating is expected to have a boxoffice performance about as good as one with a 60% rating. Note that the red line indicates the threshold for obtaining a "Fresh" rating.
+One may wonder if the "Fresh" rating has an effect on the box office performance of a movie, independent of the percentage score. The following plot (which computes the relationship between the two variables separately for RT scores above and below the 60% threshold) suggests there is no special advantage a film receives for having a "Fresh" rating. A film with a 59% rating is expected to have a box office performance about as good as one with a 60% rating. Note that the red line indicates the threshold for obtaining a "Fresh" rating.
 
 ```{r discontinuity_RT_score_boxoffice, cache=TRUE}
 
@@ -158,19 +158,19 @@ ggplot() +
   geom_smooth(data = filter(boxoffice, rt.critics >= 60), mapping = aes(rt.critics, dom.box.mil), method = "lm") +
   geom_vline(xintercept = 60, color = "red") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Discontinuity plot of Rotten Tomatoes score and domestic boxoffice\n(millions, USD)") +
+  ylab("Box office") +
+  ggtitle("Discontinuity plot of Rotten Tomatoes score and domestic box office\n(millions, USD)") +
   coord_cartesian(expand=F)
 
 ```
 
 The final plot that looks at studio performance visualizes the average number of theaters on a film's release. Not surprisingly, boutique studios like Fox Searchlight and Focus Features tend to not open their movies in wide releases. Six of the "Big Seven" occupy the top six ranks - again, not a surprising finding. Interestingly, despite Lionsgate being considered one of the "Big Seven" based on the number of films released per year, the studio has a middling average number of theaters on release, around 2500. Disney holds the top spot, with more than 3500 theaters showing one of its movies on opening day, on average.
 
-```{r average_theaters_top15, cache=TRUE}
+```{r average_theaters_top15, cache=F}
 g.d4
 ```
 
-Before moving to the next stage of the analysis, let's examine the correlations between these averaged characteristics of the top 15 studios. The average boxoffice performance of a studio's films is moderately correlated with the total numbers of movies it releases and the average number of theaters its movies are shown in on release. There is almost no correlation between a studio's average Rotten Tomatoes score and the number of films it releases (my proxy for studio size). The only negative correlation is between the average Rotten Tomatoes score and the average number of theaters on release. This finding suggests that critics tend to prefer "smaller" movies (i.e., films released less widely). This interpretation is supported when we look at the correlation between critics score and number of theaters on release, for movies rather than studios: `r round(cor(boxoffice$rt.critics, boxoffice$dom.theaters.open, use = "complete.obs"), 2)`. Though weaker than the correlation when our unit of analysis is studio, the correlation between the two variables on a film-unit basis is still negative. Interestingly, the correlation between the Rotten Tomatoes *audience* score and number of theaters on release is virtually the same: `r round(cor(boxoffice$rt.audience, boxoffice$dom.theaters.open, use = "complete.obs"), 2)`. One complaint that often appears on the internet is that critics and audience members have divergent attitudes on what makes a good movie. These findings suggest this concern may be misplaced. I will have more to say on this issue later in the analysis.
+Before moving to the next stage of the analysis, let's examine the correlations between these averaged characteristics of the top 15 studios. The average box office performance of a studio's films is moderately correlated with the total numbers of movies it releases and the average number of theaters its movies are shown in on release. There is almost no correlation between a studio's average Rotten Tomatoes score and the number of films it releases (my proxy for studio size). The only negative correlation is between the average Rotten Tomatoes score and the average number of theaters on release. This finding suggests that critics tend to prefer "smaller" movies (i.e., films released less widely). This interpretation is supported when we look at the correlation between critics score and number of theaters on release, for movies rather than studios: `r round(cor(boxoffice$rt.critics, boxoffice$dom.theaters.open, use = "complete.obs"), 2)`. Though weaker than the correlation when our unit of analysis is studio, the correlation between the two variables on a film-unit basis is still negative. Interestingly, the correlation between the Rotten Tomatoes *audience* score and number of theaters on release is virtually the same: `r round(cor(boxoffice$rt.audience, boxoffice$dom.theaters.open, use = "complete.obs"), 2)`. One complaint that often appears on the internet is that critics and audience members have divergent attitudes on what makes a good movie. These findings suggest this concern may be misplaced. I will have more to say on this issue later in the analysis.
 
 ```{r correlation_matrix_top15, cache=TRUE}
 cor.table <- table.majmid %>% dplyr::select(-distributor) %>% correlate() %>% rearrange() %>%
@@ -179,12 +179,12 @@ cor.table <- table.majmid %>% dplyr::select(-distributor) %>% correlate() %>% re
          rt.critics.avg = round(rt.critics.avg, 2),
          theaters.avg = round(theaters.avg, 2)) %>%
   rename(` ` = rowname,
-         `Average boxoffice performance` = box.office.avg,
+         `Average box office performance` = box.office.avg,
          `Total movies` = total.movies,
          `Average Rotten Tomatoes score (critics)` = rt.critics.avg,
          `Average number of theaters` = theaters.avg)
 
-cor.table$` ` <- c("Average number of theaters", "Total movies", "Average boxoffice performance", "Average Rotten Tomatoes score (critics)")
+cor.table$` ` <- c("Average number of theaters", "Total movies", "Average box office performance", "Average Rotten Tomatoes score (critics)")
 
 cor.table[is.na(cor.table)] <- ""
 
@@ -198,7 +198,7 @@ sign_formatter <-
 format_table(cor.table, align = c("l", "c", "c", "c", "r"),
              list(
                ` ` = formatter("span", style = ~ style(font.weight = "bold", color = c("#454545"))),
-               `Average boxoffice performance` = sign_formatter,
+               `Average box office performance` = sign_formatter,
                `Total movies` = sign_formatter,
                `Average Rotten Tomatoes score (critics)` = sign_formatter,
                `Average number of theaters` = sign_formatter
@@ -209,7 +209,7 @@ format_table(cor.table, align = c("l", "c", "c", "c", "r"),
 
 ```
 
-It is clear from the above visualizations and analysis that there are substantial differences across studios when it comes to the kinds of movies that are made and how well they perform at the boxoffice. These findings justify including a predictor based on a movie's studio in any models that seek to predict a film's boxoffice performance. However, including a variable that has a label for every studio would be overly complicated. So instead I create a new variable with just three categories based on the total number of movies a studio released between 2014 and 2018. If a studio released ten movies or less, I classify it as "minor". If the studio released more than ten but less than 46, it is classified as "mid". All other studios are classified as "major". These major studios correspond with the "Big Seven" I listed above.
+It is clear from the above visualizations and analysis that there are substantial differences across studios when it comes to the kinds of movies that are made and how well they perform at the box office. These findings justify including a predictor based on a movie's studio in any models that seek to predict a film's box office performance. However, including a variable that has a label for every studio would be overly complicated. So instead I create a new variable with just three categories based on the total number of movies a studio released between 2014 and 2018. If a studio released ten movies or less, I classify it as "minor". If the studio released more than ten but less than 46, it is classified as "mid". All other studios are classified as "major". These major studios correspond with the "Big Seven" I listed above.
 
 ### Observed patterns by studio status
 
@@ -218,30 +218,33 @@ This section explores the data after collapsing the studio variable into three c
 ```{r average_boxoffice_studio_status, cache=TRUE}
 tab2 <- boxoffice %>% group_by(.$studio.status.threecat) %>%
   summarize(dom.box.mil = round(mean(dom.box.mil), 2)) %>%
-  rename(`Studio status` = ".$studio.status.threecat", `Average domestic boxoffice (millions)` = dom.box.mil)
+  rename(`Studio status` = ".$studio.status.threecat", `Average domestic box office (millions)` = dom.box.mil)
 
 format_table(tab2,
              align = c("l", "r"),
              list(
-               `Average domestic boxoffice (millions)` = color_tile(customGreen0, customGreen),
+               `Average domestic box office (millions)` = color_tile(customGreen0, customGreen),
                `Studio status` = formatter("span", style = ~ style(color = "grey",font.weight = "bold", width = "50%"))
              )) %>%
   kable_styling(full_width = F) %>% column_spec(2, width = "10em")
 
 ```
 
-## Boxplots of domestic boxoffice results by studio status
+## Boxplots of domestic box office results by studio status
 
-The first plot shows the distributions for all three studio categories together. The median values (visualized by the black lines inside the boxes) are not too different from each other. However, the major studio category has far more outliers (defined as at least 1.5 times greater/smaller than the 75th/25th percentile of that distribution) and a much wider range. A movie appears much more likely to be a boxoffice smash if it is released by a major studio than by a mid-size or minor one.
+The first plot shows the distributions for all three studio categories together. The median values (visualized by the black lines inside the boxes) are not too different from each other. However, the major studio category has far more outliers (defined as at least 1.5 times greater/smaller than the 75th/25th percentile of that distribution) and a much wider range. A movie appears much more likely to be a box office smash if it is released by a major studio than by a mid-size or minor one.
 
 ```{r boxplot_boxoffice_all, cache=TRUE}
 ggplot(boxoffice, aes(studio.status.threecat, dom.box.mil)) +
-  geom_boxplot() + coord_flip()
+  geom_boxplot() + coord_flip() +
+  ylab("Studio status") +
+  xlab("Box office") +
+  ggtitle("Boxplots of box office performance (millions, USD)\nfor each studio status category")
 ```
 
-The next three plots explore the distribution of domestic boxoffice performance (in millions of USD) for each studio status category - minor, mid-sized and major. Each plot displays the standard boxplot values (e.g., median, lower quartile, upper quartile) and names the outliers for each category. For the major-studio plot, I only label the "extreme" outliers ((defined as at least 3 times greater/smaller than the 75th/25th percentile of that distribution) so that the text labels are legible.
+The next three plots explore the distribution of domestic box office performance (in millions of USD) for each studio status category - minor, mid-sized and major. Each plot displays the standard boxplot values (e.g., median, lower quartile, upper quartile) and names the outliers for each category. For the major-studio plot, I only label the "extreme" outliers ((defined as at least 3 times greater/smaller than the 75th/25th percentile of that distribution) so that the text labels are legible.
 
-The first plot shows that fifty percent of major-studio films earn between `r dat.major <- boxoffice %>% filter(studio.status.threecat == "major") %>% summarize(median = round(median(dom.box.mil), 2), IQR = round(IQR(dom.box.mil), 2)); dplyr::pull(dat.major, 1) - dplyr::pull(dat.major, 2) / 2` and `r dplyr::pull(dat.major, 1) + dplyr::pull(dat.major, 2) / 2` million USD. However, there are many outliers that earn well above 250 million USD at the boxoffice. Star Wars and Marvel films dominate the group of outliers, with The Force Awakens earning the most money with over 875 million USD. In fact, virtually all of these outlier films were released by Disney.
+The first plot shows that fifty percent of major-studio films earn between `r dat.major <- boxoffice %>% filter(studio.status.threecat == "major") %>% summarize(median = round(median(dom.box.mil), 2), IQR = round(IQR(dom.box.mil), 2)); dplyr::pull(dat.major, 1) - dplyr::pull(dat.major, 2) / 2` and `r dplyr::pull(dat.major, 1) + dplyr::pull(dat.major, 2) / 2` million USD. However, there are many outliers that earn well above 250 million USD at the box office. Star Wars and Marvel films dominate the group of outliers, with The Force Awakens earning the most money with over 875 million USD. In fact, virtually all of these outlier films were released by Disney.
 
 
 ```{r boxplot_majors, cache=TRUE}
@@ -255,11 +258,11 @@ ggplot(dat.maj, aes(studio.status.threecat, dom.box.mil)) +
   geom_boxplot() +
   geom_text_repel(mapping = aes(label = outlier), hjust = -0.1) +
   xlab("Studio status") +
-  ylab("Boxoffice") +
+  ylab("Box office") +
   ggtitle("Boxplot of domestic boxoffice performance (millions, USD) for major studios")
 ```
 
-The second boxplot (displayed below) visualizes the distribution of domestic boxoffice performance for mid-sized studios. Fifty percent of these studios' films earned between `r dat.mid <- boxoffice %>% filter(studio.status.threecat == "mid") %>% summarize(median = round(median(dom.box.mil), 2), IQR = round(IQR(dom.box.mil), 2)); dplyr::pull(dat.mid, 1) - dplyr::pull(dat.mid, 2) / 2` and `r dplyr::pull(dat.mid, 1) + dplyr::pull(dat.mid, 2) / 2` million USD. There are some outliers, but not nearly as many as for the major studios. Bad Moms was the highest performing mid-sized studio film between 2014 and 2018, earning more than 105 million USD.
+The second boxplot (displayed below) visualizes the distribution of domestic box office performance for mid-sized studios. Fifty percent of these studios' films earned between `r dat.mid <- boxoffice %>% filter(studio.status.threecat == "mid") %>% summarize(median = round(median(dom.box.mil), 2), IQR = round(IQR(dom.box.mil), 2)); dplyr::pull(dat.mid, 1) - dplyr::pull(dat.mid, 2) / 2` and `r dplyr::pull(dat.mid, 1) + dplyr::pull(dat.mid, 2) / 2` million USD. There are some outliers, but not nearly as many as for the major studios. Bad Moms was the highest performing mid-sized studio film between 2014 and 2018, earning more than 105 million USD.
 
 ```{r boxplot_mids, cache=TRUE}
 dat.mid <- boxoffice %>% filter(studio.status.threecat == "mid") %>% mutate(outlier = ifelse(is_outlier(dom.box.mil, 1.5), name, ""))
@@ -268,11 +271,11 @@ ggplot(dat.mid, aes(studio.status.threecat, dom.box.mil)) +
   geom_boxplot() +
   geom_text_repel(mapping = aes(label = outlier), hjust = -0.1) +
   xlab("Studio status") +
-  ylab("Boxoffice") +
-  ggtitle("Boxplot of domestic boxoffice performance (millions, USD) for mid-sized studios")
+  ylab("Box office") +
+  ggtitle("Boxplot of domestic box office performance (millions, USD) for mid-sized studios")
 ```
 
-The third and final boxplot (displayed below) visualizes the distribution of domestic boxoffice performance for minor studios. Fifty percent of these films earned between `r dat.min <- boxoffice %>% filter(studio.status.threecat == "minor") %>% summarize(median = round(median(dom.box.mil), 2), IQR = round(IQR(dom.box.mil), 2)); dplyr::pull(dat.min, 1) - dplyr::pull(dat.min, 2) / 2` and `r dplyr::pull(dat.min, 1) + dplyr::pull(dat.min, 2) / 2` million USD, a fairly narrow range. Very few of these movies made more than 45 million USD, with Creed II earning the most at almost 120 million.
+The third and final boxplot (displayed below) visualizes the distribution of domestic box office performance for minor studios. Fifty percent of these films earned between `r dat.min <- boxoffice %>% filter(studio.status.threecat == "minor") %>% summarize(median = round(median(dom.box.mil), 2), IQR = round(IQR(dom.box.mil), 2)); dplyr::pull(dat.min, 1) - dplyr::pull(dat.min, 2) / 2` and `r dplyr::pull(dat.min, 1) + dplyr::pull(dat.min, 2) / 2` million USD, a fairly narrow range. Very few of these movies made more than 45 million USD, with Creed II earning the most at almost 120 million.
 
 ```{r boxplot_minors, cache=TRUE}
 dat.min <- boxoffice %>% filter(studio.status.threecat == "minor") %>% mutate(outlier = ifelse(is_outlier(dom.box.mil, 1.5), name, ""))
@@ -281,13 +284,13 @@ ggplot(dat.min, aes(studio.status.threecat, dom.box.mil)) +
   geom_boxplot() +
   geom_text_repel(mapping = aes(label = outlier), hjust = -0.1) +
   xlab("Studio status") +
-  ylab("Boxoffice") +
-  ggtitle("Boxplot of domestic boxoffice performance (millions, USD) for minor studios")
+  ylab("Box office") +
+  ggtitle("Boxplot of domestic box office performance (millions, USD) for minor studios")
 ```
 
 Based on the interquartile ranges (i.e., the range of the middle 50% of values, centered around the median value) for these three categories, it's clear that movies from all three categories are capable of making relatively little money (i.e., less than 20 million USD). However, the three categories have substantially different upper ends of their interquartile ranges, with the difference between that of the major studios and the minor studios the most dramatic. It appears, then, that movies released by major studios are much more likely to make a lot of money than those released by mid-size or minor ones. At the same time, though, major studio films frequently make as much as films from smaller studios do.
 
-The next three (density) plots provide an alternative way of looking at the distribution of boxoffice performance by studio category. Density is a measure of proportion for a given value along the x-axis - in this case, domestic boxoffice performance. The higher the density at a given point, the more movies earned that much money. The red lines indicate the mean domestic boxoffice performance for that studio category.
+The next three (density) plots provide an alternative way of looking at the distribution of box office performance by studio category. Density is a measure of proportion for a given value along the x-axis - in this case, domestic box office performance. The higher the density at a given point, the more movies earned that much money. The red lines indicate the mean domestic box office performance for that studio category.
 
 The first plot shows that the distribution for major studios is highly skewed upward, with most movies earning less than the mean but a number of very large outliers pulling the mean to the right. A similar (though less extreme) pattern is apparent for minor studios, whereas mid-sized studios have a less skewed distribution.
 
@@ -296,24 +299,24 @@ The first plot shows that the distribution for major studios is highly skewed up
 boxoffice %>% filter(studio.status.threecat == "major") %>% ggplot(aes(dom.box.mil)) +
   geom_density(fill = "gray", color = "black", alpha = 0.7) +
   geom_vline(xintercept = mean(boxoffice$dom.box.mil[boxoffice$studio.status.threecat == "major"]), color = "red") +
-  xlab("Boxoffice") +
-  ggtitle("Density plot of domestic boxoffice performance (millions, USD) for major studios")
+  xlab("Box office") +
+  ggtitle("Density plot of domestic box office performance (millions, USD) for major studios")
 
 boxoffice %>% filter(studio.status.threecat == "mid") %>% ggplot(aes(dom.box.mil)) +
   geom_density(fill = "gray", color = "black", alpha = 0.7) + 
   geom_vline(xintercept = mean(boxoffice$dom.box.mil[boxoffice$studio.status.threecat == "mid"]), color = "red") +
-  xlab("Boxoffice") +
-  ggtitle("Density plot of domestic boxoffice performance (millions, USD)\nfor mid-sized studios")
+  xlab("Box office") +
+  ggtitle("Density plot of domestic box office performance (millions, USD)\nfor mid-sized studios")
 
 boxoffice %>% filter(studio.status.threecat == "minor") %>% ggplot(aes(dom.box.mil)) +
   geom_density(fill = "gray", color = "black", alpha = 0.7) + 
   geom_vline(xintercept = mean(boxoffice$dom.box.mil[boxoffice$studio.status.threecat == "minor"]), color = "red") +
-  xlab("Boxoffice") +
-  ggtitle("Density plot of domestic boxoffice performance (millions, USD) for minor studios")
+  xlab("Box office") +
+  ggtitle("Density plot of domestic box office performance (millions, USD) for minor studios")
 ```
 
 
-Indeed, the skewness scores of these three distributions are `r tab3 <- boxoffice %>% group_by(studio.status.threecat) %>% summarize(skewness = skewness(dom.box.mil)); round(dplyr::pull(tab3, 2)[1], 2)`, `r round(dplyr::pull(tab3, 2)[2], 2)` and `r round(dplyr::pull(tab3, 2)[3], 2)` for minor, mid-sized and major studios, respectively. A non-skewed distribution should have a score close to zero, and, as a rule of thumb, no more than 1 or less than -1. All three of these studio categories exhibit substantial skewness. Since we are using domestic boxoffice performance (in millions of USD) as the outcome variable to predict, we should address this skewness since it can interfere with our analysis. Specifically, films with very high boxoffice returns can excessively influence the estimation of the coefficients we use to develop predictive models. To mitigate this skewness, I log this outcome variable when using it in any models. For visualization purposes, however, I continue to use the original version of the domestic boxoffice performance variable since it is much more easily interpretable.
+Indeed, the skewness scores of these three distributions are `r tab3 <- boxoffice %>% group_by(studio.status.threecat) %>% summarize(skewness = skewness(dom.box.mil)); round(dplyr::pull(tab3, 2)[1], 2)`, `r round(dplyr::pull(tab3, 2)[2], 2)` and `r round(dplyr::pull(tab3, 2)[3], 2)` for minor, mid-sized and major studios, respectively. A non-skewed distribution should have a score close to zero, and, as a rule of thumb, no more than 1 or less than -1. All three of these studio categories exhibit substantial skewness. Since we are using domestic box office performance (in millions of USD) as the outcome variable to predict, we should address this skewness since it can interfere with our analysis. Specifically, films with very high box office returns can excessively influence the estimation of the coefficients we use to develop predictive models. To mitigate this skewness, I log this outcome variable when using it in any models. For visualization purposes, however, I continue to use the original version of the domestic box office performance variable since it is much more easily interpretable.
 
 ## Numeric predictors (summary)
 
@@ -363,11 +366,11 @@ format_table(bo.corrs, align = c("l", "c", "c", "c", "c", "c", "c", "c", "c", "c
 ) %>% add_header_above(c("Correlations, all numeric variables" = 11))
 ```
 
-The correlation table reveals some interesting patterns. Total boxoffice is moderately correlated (i.e., absolute value is greater than 0.30) with the RT audience score, the number of theaters on release, and maximum number of theaters. Opening boxoffice is strongly correlated with total boxoffice (i.e., absolute value is greater than 0.7). When selecting numeric variables to include in my predictive models, I only want to include those variables that have at least a moderate correlation with my outcome variable: total boxoffice. However, I also want to only include variables that can be useful predictors, that is, prior to the film's release. Of course, the RT audience score does not fit this criterion, but if we relax this rule just a bit and say that any variables whose values are determined prior to the first evening of a film's release can be useful predictors. To see if final RT scores (which the two RT variables measure) are good proxies for the reception a movie receives (by both critics and audiences) before the movie's first evening showings, I took a random sample of 21 films from my dataset and used the Internet Wayback Machine to obtain RT scores the morning of the film's release (i.e., prior to the its first evening showings) and compared those to the final RT scores obtained in February 2020. The following two tables display correlations between the main RT variables and their respective alternatives, i.e., films' scores at different snapshots in time - the day of release, 3 days after release, 14 days after release and 28 days after release. The extremely high correlations suggest that final RT scores are on average good measures of a film's pre-release or release day reception.
+The correlation table reveals some interesting patterns. Total box office is moderately correlated (i.e., absolute value is greater than 0.30) with the RT audience score, the number of theaters on release, and maximum number of theaters. Opening box office is strongly correlated with total box office (i.e., absolute value is greater than 0.7). When selecting numeric variables to include in my predictive models, I only want to include those variables that have at least a moderate correlation with my outcome variable: total box office. However, I also want to only include variables that can be useful predictors, that is, prior to the film's release. Of course, the RT audience score does not fit this criterion, but if we relax this rule just a bit and say that any variables whose values are determined prior to the first evening of a film's release can be useful predictors. To see if final RT scores (which the two RT variables measure) are good proxies for the reception a movie receives (by both critics and audiences) before the movie's first evening showings, I took a random sample of 21 films from my dataset and used the Internet Wayback Machine to obtain RT scores the morning of the film's release (i.e., prior to the its first evening showings) and compared those to the final RT scores obtained in February 2020. The following two tables display correlations between the main RT variables and their respective alternatives, i.e., films' scores at different snapshots in time - the day of release, 3 days after release, 14 days after release and 28 days after release. The extremely high correlations suggest that final RT scores are on average good measures of a film's pre-release or release day reception.
 
 (NOTE: the days after release markers are approximate. Most movies did not have archived pages for every relevant day. I picked the closest day to each desired interval when possible, though some movies did not have archived pages anywhere close to the desired interval. These intervals I have left blank.)
 
-Finally, I relax my criteria to also allow for the inclusion of the RT critics score in predictive models, even though it has a correlation of just 0.26 with total boxoffice. Since one of this project's motivating questions is how much impact Rotten Tomatoes scores have on a film's success, I think including both variables in the models would be substantively interesting.
+Finally, I relax my criteria to also allow for the inclusion of the RT critics score in predictive models, even though it has a correlation of just 0.26 with total box office. Since one of this project's motivating questions is how much impact Rotten Tomatoes scores have on a film's success, I think including both variables in the models would be substantively interesting.
 
 ```{r RT_scores_robustness, cache = T}
 rt.sample <- read_csv("rt.sample.csv")
@@ -418,7 +421,7 @@ tab5 %>% ggplot() +
   scale_color_manual(name = "Score type", values = c("blue" = "blue", "green" = "green"), labels = c("Critics", "Audience"), guide = "legend")
 ```
 
-The third plot looks at the interaction between RT score and studio status in greater detail. This set of density plots shows a couple of interesting patterns. First, RT audience scores seem to be more densely distributed than critics scores, with the density curves higher in the middle of the distributions for audience scores and higher at the tails for critics scores. This suggests audiences tend to be not as strongly denigrating or acclamatory as critics are. Second, all three plots are to some extent double peaked. For instance, audiences seem more likely to rate a movie a 45% or 75% score than a 55% for mid-sized studio releases (bear in mind that these percentages represent the portion of audiences/critics who have favorably reviewed a movie). This double-peakedness is more of an issue for the critics score variable because the peaks are further apart. The relative similarity in density height between the peaks for the mid-sized and major studio categories is notable as well (for audience scores, only the mid-sized category has peaks with similar heights). The spread and roughly equal height of these peaks for the critics score variable suggests that it may be a weak predictor for other variables, a possibility that is supported by the weaker correlation between the critics score and boxoffice variables. The double-peakedness is also present for the audience score variable, but appears less severe.
+The third plot looks at the interaction between RT score and studio status in greater detail. This set of density plots shows a couple of interesting patterns. First, RT audience scores seem to be more densely distributed than critics scores, with the density curves higher in the middle of the distributions for audience scores and higher at the tails for critics scores. This suggests audiences tend to be not as strongly denigrating or acclamatory as critics are. Second, all three plots are to some extent double peaked. For instance, audiences seem more likely to rate a movie a 45% or 75% score than a 55% for mid-sized studio releases (bear in mind that these percentages represent the portion of audiences/critics who have favorably reviewed a movie). This double-peakedness is more of an issue for the critics score variable because the peaks are further apart. The relative similarity in density height between the peaks for the mid-sized and major studio categories is notable as well (for audience scores, only the mid-sized category has peaks with similar heights). The spread and roughly equal height of these peaks for the critics score variable suggests that it may be a weak predictor for other variables, a possibility that is supported by the weaker correlation between the critics score and box office variables. The double-peakedness is also present for the audience score variable, but appears less severe.
 
 In addition, the notable variations in RT score distribution across the three studio categories suggests that interacting these numeric variables with the categorical studio one may be sensible when building a predictive linear model.
 
@@ -435,7 +438,7 @@ ggplot(boxoffice) + geom_density(mapping = aes(rt.critics, fill = "blue", color 
 
 ## Number of theaters on release
 
-The next two plots provide visual information on the third numeric variable I use when developing predictive models for boxoffice success: the number of theaters a film is shown in on release. The first plot shows the average number of theaters on release for each year between 2014 and 2018. There is a modest, but steady increase across these years. The second plot displays the density distribution of the theaters on release variable for each studio status category. The density plots for minor and mid-sized studio films are similarly shaped, though the highest peak for the mid-sized category is further to the left on the x-axis, indicating that mid-sized studio films tend to be released more widely than minor studio ones. There are still quite a few mid-sized studio films that are released in very few theaters, however. Films in the major studio category seem to be overwhelmingly released in a large number of theaters. These patterns suggest we should test the interaction between the theaters on release variable and the studio status variable when constructing predictive models.
+The next two plots provide visual information on the third numeric variable I use when developing predictive models for box office success: the number of theaters a film is shown in on release. The first plot shows the average number of theaters on release for each year between 2014 and 2018. There is a modest, but steady increase across these years. The second plot displays the density distribution of the theaters on release variable for each studio status category. The density plots for minor and mid-sized studio films are similarly shaped, though the highest peak for the mid-sized category is further to the left on the x-axis, indicating that mid-sized studio films tend to be released more widely than minor studio ones. There are still quite a few mid-sized studio films that are released in very few theaters, however. Films in the major studio category seem to be overwhelmingly released in a large number of theaters. These patterns suggest we should test the interaction between the theaters on release variable and the studio status variable when constructing predictive models.
 
 ```{r theaters_density, cache = T}
 
@@ -478,8 +481,8 @@ g.m2 <- ggplot(data = tab.month) +
   geom_col(aes(month, avg.boxoffice, fill = month)) +
   scale_fill_got_d(option = "margaery") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
-  ylab("Average Boxoffice") +
-  ggtitle("Average boxoffice performance by month")
+  ylab("Average box office") +
+  ggtitle("Average box office performance by month")
 
 g.m3 <- ggplot(data = tab.month) +
   geom_col(aes(month, avg.rt.critics, fill = month)) +
@@ -507,13 +510,13 @@ The plot below on the left shows the number of movies released in each month. We
 
 The plot on the right shows the average number of theaters on release for each month. The widest average releases occur in February, May, June and July. The latter three months make intuitive sense because that is when major blockbusters are usually released. February is rather surprising, though, but can be explained by the large number of movies that released in very large numbers of theaters (i.e., more than 3710, or the 80th percentile for the theaters on release variable). Such films include The Lego Movie and its sequel The Lego Batman Movie, Black Panther, and the Fifty Shades movies. Of the six movies that released in February in more than 3700 theaters, five were released after 2016. A disproportionate number of movies that are released in February have wide releases, especially in recent years. Conversely, a disproportionate number of films that are released in December have very small releases. This finding likely captures the tendency for studios to release Oscar-bait films very late in the year, so as to release them as close to the awards ceremonies as possible.
 
-```{r month_plots_num_theaters, cache = T}
+```{r month_plots_num_theaters, cache = F}
 g.m1 + g.m5
 ```
 
-The next three plots visualize the relationship between the two Rotten Tomatoes score variables and boxoffice performance and month of release. The two Rotten Tomatoes plots are roughly similar, with the most highly rated movies on average releasing in June, November and December. Since the latter two months often have a lot of Oscar-ambitious films released, it is not surprising they would have two of the highest average scores across all months. June is an interesting result, since this is right in the middle of blockbuster season, when many tentpole movies that may do well at the boxoffice but not so well with critics are released. It is possible that studios tend to release the "best" films from their annual stables of potential blockbusters earlier in the summer season. Regardless of the reasons for why these variations across months are observed, these five plots suggest that it may be beneficial to interact the month variable with at least some of the numeric variables when building predictive models.
+The next three plots visualize the relationship between the two Rotten Tomatoes score variables and box office performance and month of release. The two Rotten Tomatoes plots are roughly similar, with the most highly rated movies on average releasing in June, November and December. Since the latter two months often have a lot of Oscar-ambitious films released, it is not surprising they would have two of the highest average scores across all months. June is an interesting result, since this is right in the middle of blockbuster season, when many tentpole movies that may do well at the box office but not so well with critics are released. It is possible that studios tend to release the "best" films from their annual stables of potential blockbusters earlier in the summer season. Regardless of the reasons for why these variations across months are observed, these five plots suggest that it may be beneficial to interact the month variable with at least some of the numeric variables when building predictive models.
 
-```{r month_plots_RT_boxoffice, cache = T}
+```{r month_plots_RT_boxoffice, cache = F}
 (g.m3 + g.m4) / g.m2
 ```
 
@@ -521,7 +524,7 @@ The next three plots visualize the relationship between the two Rotten Tomatoes 
 
 The last set of variables I want to explore before beginning the process of building predictive models is the one that measures genres. Unlike the categorical variables studio status and month of release, genre is not mutually exclusive. Therefore, I created a series of binary genre variables, corresponding to the genres used by Rotten Tomatoes. The genre classifications for each film were also gleaned from the RT website.
 
-Four plots are displayed below that visualize the relationships between genre and number of films, boxoffice performance, RT critics score and RT audience score. Drama is the most frequent genre category, followed by action and comedy. However, scifi, animation and family films perform the best at the boxoffice, on average. Documentaries and art/foreign films tend to be the best reviewed, by both critics and audiences. The variation in average boxoffice performance by genre suggests that considering these genre variables when building predictive models could be advantageous. While there are differences across genre in terms of RT score, these differences seem fairly minimal, with the possible exceptions of documentaries and horror films. There does not seem to be much support for spending time on determining which interactions would be valuable for model-building.
+Four plots are displayed below that visualize the relationships between genre and number of films, box office performance, RT critics score and RT audience score. Drama is the most frequent genre category, followed by action and comedy. However, scifi, animation and family films perform the best at the box office, on average. Documentaries and art/foreign films tend to be the best reviewed, by both critics and audiences. The variation in average box office performance by genre suggests that considering these genre variables when building predictive models could be advantageous. While there are differences across genre in terms of RT score, these differences seem fairly minimal, with the possible exceptions of documentaries and horror films. There does not seem to be much support for spending time on determining which interactions would be valuable for model-building.
 
 ```{r, plots_genre, cache=TRUE}
 genre.sum1 <- boxoffice %>%
@@ -572,9 +575,9 @@ g.g2 <- ggplot(genre.tab) +
   geom_col(aes(reorder(genre, boxoffice.avg), boxoffice.avg, fill = genre)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), legend.position = "none") +
   scale_fill_got_d(option = "Lannister") +
-  ylab("Boxoffice") +
+  ylab("Box office") +
   xlab("Genre") +
-  ggtitle("Average boxoffice performance\n(millions, USD) by genre")
+  ggtitle("Average box office performance\n(millions, USD) by genre")
 
 g.g3 <- ggplot(genre.tab) +
   geom_col(aes(reorder(genre, rt.critics), rt.critics, fill = genre)) +
@@ -595,13 +598,13 @@ g.g4 <- ggplot(genre.tab) +
 g.g1 + g.g2 + g.g3 + g.g4
 ```
 
-# Predicting domestic boxoffice performance
+# Predicting domestic box office performance
 
-Given the above data exploration, I have decided to focus on the following predictors when constructing models for predicting boxoffice performance: Rotten Tomatoes critics score, Rotten Tomatoes audience score, number of theaters on release, year, studio status, month, and genre. Before working towards a final predictive model, however, I explore the linear relationship between RT scores and domestic boxoffice. Because of the extreme skew of the domestic boxoffice variable, I first log it before including it in any models.
+Given the above data exploration, I have decided to focus on the following predictors when constructing models for predicting box office performance: Rotten Tomatoes critics score, Rotten Tomatoes audience score, number of theaters on release, year, studio status, month, and genre. Before working towards a final predictive model, however, I explore the linear relationship between RT scores and domestic box office. Because of the extreme skew of the domestic box office variable, I first log it before including it in any models.
 
 ## Bivariate models: Rotten Tomatoes scores
 
-The following tables show the results of the OLS regression analysis of the relationship between the RT score variables and the outcome variable (i.e., logged domestic boxoffice performance in millions of USD). The RT critics model indicates that there is a positive linear relationship between the predictor and the outcome variable. For what it's worth, both the intercept and coefficient estimate are statistically significant by conventional standards. We obtain similar results for the model estimating the relationship between the RT audience predictor and the outcome. The coefficient for the RT audience variable is almost double in magnitude compared to that of the RT critics variable. Given that the two variables are measured on the same scale (0-100%), this indicates a stronger relationship between the audience score and the outcome than between the critics score and the outcome.
+The following tables show the results of the OLS regression analysis of the relationship between the RT score variables and the outcome variable (i.e., logged domestic box office performance in millions of USD). The RT critics model indicates that there is a positive linear relationship between the predictor and the outcome variable. For what it's worth, both the intercept and coefficient estimate are statistically significant by conventional standards. We obtain similar results for the model estimating the relationship between the RT audience predictor and the outcome. The coefficient for the RT audience variable is almost double in magnitude compared to that of the RT critics variable. Given that the two variables are measured on the same scale (0-100%), this indicates a stronger relationship between the audience score and the outcome than between the critics score and the outcome.
 
 ```{r lm_models_RT_scores, cache=TRUE}
 
@@ -620,25 +623,25 @@ kable_styling(full_width = F) %>% add_header_above(c("Results for RT audience mo
   column_spec(1, "10em") %>% row_spec(1:nrow(m2b.dat), color = c("#474747"), background = c("#E0EEEE"))
 ```
 
-The following scatter plots show, however, that neither variable has an especially strong relationship with boxoffice performance. There is quite a lot of variation around the regression line in both plots, indicating that neither is a good predictor of boxoffice performance.
+The following scatter plots show, however, that neither variable has an especially strong relationship with box office performance. There is quite a lot of variation around the regression line in both plots, indicating that neither is a good predictor of box office performance.
 
 ```{r plots_log_RT_models, cache = T}
 ggplot(data = boxoffice) +
   geom_point(aes(rt.critics, dom.box.mil.log), alpha = 0.5, color = "blue") +
   geom_abline(slope = m2a.dat$estimate[2], intercept = m2a.dat$estimate[1], color = "red") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (critics)")
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (critics)")
 
 ggplot(data = boxoffice) +
   geom_point(aes(rt.audience, dom.box.mil.log), alpha = 0.5, color = "green") +
   geom_abline(slope = m2b.dat$estimate[2], intercept = m2b.dat$estimate[1], color = "red") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (audience)")
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD, logged) \n regressed on Rotten Tomatoes score (audience)")
 ```
 
-The next two plots use the appropriate bivariate regression model to compute predicted values for the outcome variable (i.e., boxoffice performance) and then transform those predictions into the original outcome scale (unlogged USD in millions). In both plots, we can see that the RT score variables underestimate the performance of dozens of films. Once again, we see that, at least on their own, these variables do not do a good job of predicting boxoffice performance.
+The next two plots use the appropriate bivariate regression model to compute predicted values for the outcome variable (i.e., box office performance) and then transform those predictions into the original outcome scale (unlogged USD in millions). In both plots, we can see that the RT score variables underestimate the performance of dozens of films. Once again, we see that, at least on their own, these variables do not do a good job of predicting box office performance.
 
 ```{r plots_reg_RT_models, cache = T}
 m2a.grid <- boxoffice %>% data_grid(rt.critics = seq(0, 100, 1)) %>% add_predictions(m2a) %>% mutate(pred = exp(pred))
@@ -648,16 +651,16 @@ ggplot(m2a.grid, aes(rt.critics, pred)) +
   geom_line(color = "red") +
   geom_point(boxoffice, mapping = aes(rt.critics, dom.box.mil), alpha = 0.5, color = "blue") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD) \n predicted by Rotten Tomatoes score (critics)") +
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD) \n predicted by Rotten Tomatoes score (critics)") +
   coord_cartesian(expand=F)
 
 ggplot(m2b.grid, aes(rt.audience, pred)) +
   geom_line(color = "red") +
   geom_point(boxoffice, mapping = aes(rt.audience, dom.box.mil), alpha = 0.5, color = "green") +
   xlab("Score") +
-  ylab("Boxoffice") +
-  ggtitle("Boxoffice performance (millions, USD) \n predicted by Rotten Tomatoes score (audience)") +
+  ylab("Box office") +
+  ggtitle("Box office performance (millions, USD) \n predicted by Rotten Tomatoes score (audience)") +
   coord_cartesian(expand=F)
 ```
 
@@ -696,7 +699,7 @@ htmlreg(list(m8d.2.1, m8d.2.1.i),
           digits = 6, star.symbol = "\\*", doctype = F, center = F, caption = "")
 ```
 
-When looked at holistically, the two models both do a good job of predicting domestic boxoffice performance, with the first having an r.squared of around `r m8d.2.1.summary[1]` and the second having one of around `r m8d.2.1.i.summary[1]`. The root mean squared error (a measure of model accuracy) is also superior for the second model: `r m8d.2.1.i.rmse` versus `r m8d.2.1.rmse` for the first. The AIC for the second model is also superior to that of the first: `r m8d.2.1.i.summary[8]` versus `r m8d.2.1.summary[8]`.
+When looked at holistically, the two models both do a good job of predicting domestic box office performance, with the first having an r.squared of around `r m8d.2.1.summary[1]` and the second having one of around `r m8d.2.1.i.summary[1]`. The root mean squared error (a measure of model accuracy) is also superior for the second model: `r m8d.2.1.i.rmse` versus `r m8d.2.1.rmse` for the first. The AIC for the second model is also superior to that of the first: `r m8d.2.1.i.summary[8]` versus `r m8d.2.1.summary[8]`.
 
 ## Visualizing the models
 
@@ -715,9 +718,9 @@ m8d.2.1.dat[-1, ] %>% ggplot(aes(term, estimate, fill = term)) +
   ggtitle("Estimated coefficients of predictors, model 1")
 ```
 
-The next few plots take an alternative approach to displaying the uncertainty surrounding Model 2's coefficients, specifically those associated with one or more interaction term. The first plot visualizes the interactive relationship between studio status and number of theaters on release and domestic boxoffice performance. In particular, it shows the changes in the linear relationship between number of theaters and boxoffice when moving from one studio category to another. Each line represents point predictions for boxoffice performance given a certain number of theaters on release and a certain studio category. The bands represent the 95% confidence intervals for these predictions.
+The next few plots take an alternative approach to displaying the uncertainty surrounding Model 2's coefficients, specifically those associated with one or more interaction term. The first plot visualizes the interactive relationship between studio status and number of theaters on release and domestic box office performance. In particular, it shows the changes in the linear relationship between number of theaters and box office when moving from one studio category to another. Each line represents point predictions for box office performance given a certain number of theaters on release and a certain studio category. The bands represent the 95% confidence intervals for these predictions.
 
-It is clear that there isn't much difference in the relationship betrween number of theaters and boxoffice performance when comparing films made by minor studios and those made by mid-sized ones. Major studio films, on the other hand, exhibit a stronger relationship between number of theaters and boxoffice, especially for films released in more than 3000 theaters. Major studio films seem to better take advantage of large-scale releases than do those released by smaller studios. One possible reason may be that major studios have the marketing budgets to encourage large numbers of people to go fill the seats in the theaters their movies are shown in, whereas smaller studios lack such resources.
+It is clear that there isn't much difference in the relationship betrween number of theaters and box office performance when comparing films made by minor studios and those made by mid-sized ones. Major studio films, on the other hand, exhibit a stronger relationship between number of theaters and box office, especially for films released in more than 3000 theaters. Major studio films seem to better take advantage of large-scale releases than do those released by smaller studios. One possible reason may be that major studios have the marketing budgets to encourage large numbers of people to go fill the seats in the theaters their movies are shown in, whereas smaller studios lack such resources.
 
 ```{r plot_interaction_theaters_studio, cache=TRUE}
 # visualize dom.theaters.open*studio.status.threecat
@@ -744,15 +747,15 @@ ggplot(dat,
     ),
     stat = "identity") +
   xlab("Theaters") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand number of theaters at open, by studio status") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand number of theaters at open, by studio status") +
   scale_color_discrete(guide = F) +
   labs(fill = "Studio status") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
   coord_cartesian(expand=F)
 ```
 
-The next two plots visualizes the relationship between the two Rotten Tomatoes score variables and studio status. It is important to note that only the first plot is based on Model 2. The second plot illustrates what happens when we interact the RT audience variable, instead of the RT critics one, on studio status. In other words, the second plot displays predictions based on a different model. I am displaying this alternative specification to demonstrate the unique relationship the RT critics variable has with studio status. Specifically, for mid-sized and minor studio films, the relationship between RT critics scores and boxoffice performance is negligible and even negative for mid-sized studio films. The overlapping confidence bands for these two categories suggest that there is no real difference between them when it comes to predicting the relationship between RT critics scores and boxoffice performance. However, major studio films show a notably different pattern. For these films, there appears to be a very strong, positive relationship between critics score and boxoffice performance. It may be that moviegoers pay more attention to Rotten Tomatoes critics scores for major studio movies when deciding whether to go see a movie than for mid-sized/minor studio films. Given the potentially more niche nature of mid-sized/minor studio films, viewers of these movies may already make up their mind as to whether to go see them and are not as interested in what the critics say. Major studio films, though, are often intended to be tentpoles that appeal to many types of people and so there is no automatic market segment interested in seeing them. If this hypothesis is true, then the boxoffice success of major studio films can be considerable, but may be substantially tempered by a lukewarm reception by the critics.
+The next two plots visualizes the relationship between the two Rotten Tomatoes score variables and studio status. It is important to note that only the first plot is based on Model 2. The second plot illustrates what happens when we interact the RT audience variable, instead of the RT critics one, on studio status. In other words, the second plot displays predictions based on a different model. I am displaying this alternative specification to demonstrate the unique relationship the RT critics variable has with studio status. Specifically, for mid-sized and minor studio films, the relationship between RT critics scores and box office performance is negligible and even negative for mid-sized studio films. The overlapping confidence bands for these two categories suggest that there is no real difference between them when it comes to predicting the relationship between RT critics scores and box office performance. However, major studio films show a notably different pattern. For these films, there appears to be a very strong, positive relationship between critics score and box office performance. It may be that moviegoers pay more attention to Rotten Tomatoes critics scores for major studio movies when deciding whether to go see a movie than for mid-sized/minor studio films. Given the potentially more niche nature of mid-sized/minor studio films, viewers of these movies may already make up their mind as to whether to go see them and are not as interested in what the critics say. Major studio films, though, are often intended to be tentpoles that appeal to many types of people and so there is no automatic market segment interested in seeing them. If this hypothesis is true, then the box office success of major studio films can be considerable, but may be substantially tempered by a lukewarm reception by the critics.
 
 Interestingly, we do not see the same pattern when substituting an interaction between the RT audience score variable and studio status. The slopes for all three categories and positive, and while the prediction line for the major studio category is significantly steeper than those for the other two categories, the difference is not as remarkable as it is for the RT critics score-studio status interaction. Indeed, the AIC score for the model decreases when we swap this new interaction in or include both interactions. Therefore, the RT critics score-studio status interaction does more predictive heavy-lifting and is worth including in Model 2.
 
@@ -781,8 +784,8 @@ g.r1 <- ggplot(dat2,
     ),
     stat = "identity") +
   xlab("Score") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand Rotten Tomatoes score\n(critics), by studio status") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand Rotten Tomatoes score\n(critics), by studio status") +
   scale_color_discrete(guide = F) +
   labs(fill = "Studio status") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
@@ -817,8 +820,8 @@ g.r2 <- ggplot(dat4,
     ),
     stat = "identity") +
   xlab("Score") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand Rotten Tomatoes score\n(audience), by studio status") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand Rotten Tomatoes score\n(audience), by studio status") +
   scale_color_discrete(guide = F) +
   labs(fill = "Studio status") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
@@ -827,7 +830,7 @@ g.r2 <- ggplot(dat4,
 g.r1 + g.r2
 ```
 
-The final plot visualizes the interaction between number of theaters on release and month when predicting boxoffice performance. Most of the monthly prediction lines are bunched fairly close to each other, with the major exception of December. In the final month of the year, films that are released very widely (i.e., more than 3700 theaters) seem to do much better than films with similar releases in other months. Given that this is a time of year when many people have ample holiday/vacation time, and most beaches are closed, it is not surprising that big movie releases do very well during December.
+The final plot visualizes the interaction between number of theaters on release and month when predicting box office performance. Most of the monthly prediction lines are bunched fairly close to each other, with the major exception of December. In the final month of the year, films that are released very widely (i.e., more than 3700 theaters) seem to do much better than films with similar releases in other months. Given that this is a time of year when many people have ample holiday/vacation time, and most beaches are closed, it is not surprising that big movie releases do very well during December.
 
 ```{r plot_interactions_theaters_month, cache = T}
 # visualize dom.theaters.open*month
@@ -856,8 +859,8 @@ ggplot(dat3,
     ),
     stat = "identity") +
   xlab("Theaters") +
-  ylab("Predicted boxoffice") +
-  ggtitle("Predicted domestic boxoffice performance (millions, USD)\nand number of theaters at open, by month") +
+  ylab("Predicted box office") +
+  ggtitle("Predicted domestic box office performance (millions, USD)\nand number of theaters at open, by month") +
   scale_color_discrete(guide = F) +
   labs(fill = "Month") +
   guides(fill = guide_legend(override.aes = list(linetype = 0))) +
@@ -866,7 +869,7 @@ ggplot(dat3,
 
 ## Robustness tests
 
-This section presents the results of a number of checks on the robustness of the models I have so far created. The following two plots display the relationship between the predicted values of the outcomes and their residuals, that is, the difference between the actual outcome for a given observation (i.e, the actual boxoffice performance of a given film) and its predicted outcome. Both plots are for Model 2 only, since this is the one I use for prediction purposes given its higher r.squared and lower AIC. The first plot displays this relationship directly, with residuals plotted on the y-axis and predicted values on the x-axis. Ideally, the residuals should be evenly distributed on either side of the zero line and should not display any noticeable pattern. Both criteria seem to be met by this plot, though there appears to be a noticeable line demarcating the bottom-left quadrant of the plot. This may be because I excluded films that made under ten million USD at the boxoffice since I did not want very small films to bias my analysis.
+This section presents the results of a number of checks on the robustness of the models I have so far created. The following two plots display the relationship between the predicted values of the outcomes and their residuals, that is, the difference between the actual outcome for a given observation (i.e, the actual box office performance of a given film) and its predicted outcome. Both plots are for Model 2 only, since this is the one I use for prediction purposes given its higher r.squared and lower AIC. The first plot displays this relationship directly, with residuals plotted on the y-axis and predicted values on the x-axis. Ideally, the residuals should be evenly distributed on either side of the zero line and should not display any noticeable pattern. Both criteria seem to be met by this plot, though there appears to be a noticeable line demarcating the bottom-left quadrant of the plot. This may be because I excluded films that made under ten million USD at the box office since I did not want very small films to bias my analysis.
 
 The second plot displays the same relationship, but rotated such that the y-axis now represents the actual values for the outcome variable. Again, there should be balance on either side of the red line and no clear patterns should be present, both of which we observe.
 
@@ -898,14 +901,14 @@ outliers <- ols_test_outlier(m8d.2.1.i)
 mod2.cor.test <- ols_test_correlation(m8d.2.1.i)
 ```
 
-Next, I perform two robustness tests designed for OLS regression models: the Bonferroni Outlier Test and the Correlation Test for Normality. The outlier test indicates that a single observation is a significant enough outlier to have an outsized influence on the model: `r boxoffice[rownames(outliers), ]$name`. This film was released in just `r boxoffice[rownames(outliers), ]$dom.theaters.open` theaters on release but ended up making `r boxoffice[rownames(outliers), ]$dom.box.mil` million USD at the boxoffice. To be technical, this observation has a Bonferroni p-value of `r outliers[, 3]`. I am not concerned about a single outlier invalidating the model and I would never want to discount any professional duet between `boxoffice[rownames(outliers), ]$director` and `boxoffice[rownames(outliers)]$lead.actor`.
+Next, I perform two robustness tests designed for OLS regression models: the Bonferroni Outlier Test and the Correlation Test for Normality. The outlier test indicates that a single observation is a significant enough outlier to have an outsized influence on the model: `r boxoffice[rownames(outliers), ]$name`. This film was released in just `r boxoffice[rownames(outliers), ]$dom.theaters.open` theaters on release but ended up making `r boxoffice[rownames(outliers), ]$dom.box.mil` million USD at the boxoffice. To be technical, this observation has a Bonferroni p-value of `r outliers[, 3]`. I am not concerned about a single outlier invalidating the model and I would never want to discount any professional duet between `r boxoffice[rownames(outliers), ]$director` and `r boxoffice[rownames(outliers), ]$lead.actor`.
 
 The correlation test for normality obtains the correlation between the model's residuals and the expected values of the residuals under an ideal normal distribution. Since OLS regression assumes that residuals are normally distributed, this is an appropriate test for determining if this criterion is met. the reported correlation is `r mod2.cor.test`, indicating the model's residuals are very nearly normally distributed.
 
 Finally, we can measure variance inflation factors (VIFs) to identiy any collinearities between predictors that may bias their coefficients. In general, VIFs should not be above four and certainly not above ten. The following table displays the VIFs for model 2. We can see that the VIFs for many of the variables are very high. However, these are due to the fact that we have interaction terms in the model, which purposefully introduce collinearity into the model. Instead, a better approach would be to examine the VIFs for model 1, which is identical to model 2 except without the interaction terms.
 
 ```{r VIF_model2, cache = T}
-m2.vif <- ols_vif_tol(m8d.2.1.i) %>% as.tibble()
+m2.vif <- ols_vif_tol(m8d.2.1.i) %>% as_tibble()
 
 m2.vif %>% format_table() %>%
 kable_styling(full_width = F) %>% add_header_above(c("Robustness measures for model 2" = 3)) %>%
@@ -946,7 +949,7 @@ kable_styling(full_width = F) %>% add_header_above(c("Results for forward select
 
 ## xgboost model
 
-The fourth and final model I construct is quite different in design than the first three. This model is built using the XGBoost (eXtreme Gradient Boosting) machine learning algorithm. XGBoost uses a series of decision trees to arrive at a model that best predicts the outcome variable (here, domestic boxoffice performance) while minimizing overfitting. In theory, a model that is not overfitted should not only be effective at explaining the data used to create it (the training data) but also good at predicting the outcome given new data (the test data). A variety of hyperparameters are defined when constructing an XGBoost model, which I present in the table below:
+The fourth and final model I construct is quite different in design than the first three. This model is built using the XGBoost (eXtreme Gradient Boosting) machine learning algorithm. XGBoost uses a series of decision trees to arrive at a model that best predicts the outcome variable (here, domestic box office performance) while minimizing overfitting. In theory, a model that is not overfitted should not only be effective at explaining the data used to create it (the training data) but also good at predicting the outcome given new data (the test data). A variety of hyperparameters are defined when constructing an XGBoost model, which I present in the table below:
 
 
 
@@ -1000,7 +1003,7 @@ errors <- rbind(xgb_penalty2$evaluation_log)
 
 The XGBoost model I construct includes all the variables from Model 1: the two Rotten Tomatoes score variables, month, genre, year, number of theaters on release and studio status category (minor, mid-sized and major). The root mean squared error (RMSE) for the training data is `r  xgb_penalty2$evaluation_log[nrounds, 2]`, while the RMSE for the test data is `r mltools::rmse(preds = pred_penalty2, actuals = label[test_idx])`. The RMSEs are pretty close to each other, which is desirable.
 
-The following plot shoes the importance of each "feature" or variable included in the XGBoost model. Importance is essentially a measure of how often a variable is used by a leaf node, that is, to make decisions about how to minimize the gap between an observation's actual score for the outcome and its predicted score. We can see that the number of theaters on release is far more important than any other variable. Both Rotten Tomatoes score variables are next in importance, with the audience variable the more important of the two. Of the three studio status categories, the minor and major categories are substantially more important than the mid-sized one. Finally, December, October and September are the most important months when it comes to predicting boxoffice performance. No genre seems to play a major role nor does the year variable. These findings more or less match those we obtained from the OLS models presented above.
+The following plot shoes the importance of each "feature" or variable included in the XGBoost model. Importance is essentially a measure of how often a variable is used by a leaf node, that is, to make decisions about how to minimize the gap between an observation's actual score for the outcome and its predicted score. We can see that the number of theaters on release is far more important than any other variable. Both Rotten Tomatoes score variables are next in importance, with the audience variable the more important of the two. Of the three studio status categories, the minor and major categories are substantially more important than the mid-sized one. Finally, December, October and September are the most important months when it comes to predicting box office performance. No genre seems to play a major role nor does the year variable. These findings more or less match those we obtained from the OLS models presented above.
 
 ```{r xgboost_importance_plot, cache = T}
 xgb_penalty2.imp <- xgb.importance(model = xgb_penalty2)
@@ -1027,7 +1030,7 @@ The above plot demonstrates that the residuals of the XGBoost model's prediction
 
 ## Predictive performance
 
-Now that we have several models to use for predicting boxoffice performance, let's compare them directly to see which is best at prediction. I use a folding method that divides the data into five groups (or folds) and trains each model on four of the five folds and then tests each model on the fifth fold This process is repeated five times such that each fold is used once for testing purposes. I do not include Model 1, since Model 2 is identical except for the inclusion of three interaction effects. The table below displays the results for each model, indicating average errors (specifically, root mean squared error) and r.squared statistics, as well as minimums and maximums for each.
+Now that we have several models to use for predicting box office performance, let's compare them directly to see which is best at prediction. I use a folding method that divides the data into five groups (or folds) and trains each model on four of the five folds and then tests each model on the fifth fold This process is repeated five times such that each fold is used once for testing purposes. I do not include Model 1, since Model 2 is identical except for the inclusion of three interaction effects. The table below displays the results for each model, indicating average errors (specifically, root mean squared error) and r.squared statistics, as well as minimums and maximums for each.
 
 ```{r folds_model2, cache = T}
 
@@ -1144,10 +1147,12 @@ kable_styling(full_width = F) %>% add_header_above(c("Root mean squared error an
 
 We can see that the XGBoost model performs the best across all seven measures. Model 2 performs second best across most, though there seems to be a somewhat wider range for RMSE compared to the stepwise model. This may be an artifact of the way in which observations were allocated to folds, however.
 
-# Conclusion
+# Lessons for the film industry
 
-The above analysis makes clear that the number of theaters on release and the receptivity of critics and audience play the greatest role in determining the success of a movie at the boxoffice. Of course, other variables not included in the dataset may also have substantial effects on the outcome of interest. Still, all three models assessed above performed quite well in predicting boxoffice success. The values for a number of the variables included in these models are determined well in advance of a film's debut. The number of theaters on release must be negotiated by studios and theater companies prior to the film's release. The month of the release is often decided years before. All of these factors are dictated by the studio producing and releasing the film, which is perhaps the factor determined furthest in advance. The fact that these variables all have meaningful impacts on a film's future success indicates that it is possible to predict that such success well in advance with reasonable accuracy. Admittedly, the Rotten Tomatoes scores a film receives are determined after its release. Still, I have demonstrated that these scores are highly stable between the day of release and later time frames. If we wait until early on opening day to make our prognostications, then the inclusion of the RT variables in our model would make our predictions that much more accurate.
+What does all this mean for producers looking to decide which film projects to invest in? For one, timing matters, but only to a limited degree. Outside of December and (to a lesser extent) November, it does not appear that when a movie is released matters all that much. Whereas in the past, the summer months and December were when films made the most the money, this is no longer the case, as recent box office smashes such as Black Panther (released in February), Joker (released in October) and American Sniper (released wide in January) attest. Instead, studios could benefit from spreading their releases (hopeful blockbusters or otherwise) across the calendar year. It is unlikely that such a strategy would result in much lost revenue and the films may encounter less competition from others.
 
-All of that said, the results also show that there are still probably many idiosyncratic factors that play a role in boxoffice performance. For instance, sequels may perform better than originals, though only for certain movie series. While the Rotten Tomatoes critics average for director and lead actor seemed to have very weak relationships with boxoffice performance, perhaps certain actors and directors (like Will Smith or Christopher Nolan) have much greater attractive influence than others.
+Similarly, genre does not seem to matter as much, with the major exception of science fiction (which includes speculative fiction of many kinds). Fans seem to flock to science fiction movies recently in much greater numbers than they used to (see the relative lack of successful scifi movies in the 1990s). Much of this is due to the rise of Marvel Studios and its immensely popular cinematic universe. Even so, films like Jurassic World, Beauty and the Beast, and Wonder Woman illustrate that Marvel does not have a monopoly on smash scifi hits (though it seems Disney almost does). And while the great majority of major studio hits are based on well-established intellectual property, there are notable exceptions, such as Interstellar and The Martian, both of which made more than 180 million USD in North America. Both of these films were helmed by highly respected directors (Christopher Nolan and Ridley Scott) and had prominent leading men (Matthew McConaughey and Matt Damon).
 
-Future research could analyze the impact of IMDB ratings, expand the number of years included in the dataset and look at variations in variable relationships across time and look for underlying constructs that capture distinctive categories of films.
+How many theaters a film is released in, not surprisingly, has a major impact on how much money is earned. But this relationship is stronger for major studios, especially for releases of more than 2700 theaters. Producers working for smaller studios may be justified in releasing their films less widely (2500 theaters or less) since the added value of wider releases for these types of studios is ambiguous.
+
+Critics and audience reception matters, but not as much as studio executives and producers may think. A higher audience score is associated with better box office performance for all studio types, but much more so for major studios. These latter studios should therefore focus on making high-quality films, even if they are big-budget scifi actioners. Audiences likely having increasingly high expectations for acting, dialogue, editing and special-effects quality. As movie tickets continue to increase in price, fans will expect a better overall product. The weak reception of many DC Comics films and the much stronger reception of Marvel comics films speaks to this. Major studios also have to pay attention to the critics. Whereas the relationship between critics score and box office performance is essentially nonexistent for mid-sized and minor studio films, it is very much existent for major studio films. The preferences of critics should be taken into account when producing a major studio film to maximize ticket sales.
